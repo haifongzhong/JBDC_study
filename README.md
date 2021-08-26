@@ -494,6 +494,64 @@ public class StatementTest {
 
 - PreparedStatement 可以防止 SQL 注入 
 
+- 使用步骤
+
+  ```tex
+  # 一、增删改+查
+  	## 1.获取数据库连接
+  	## 2.预编译sql语句，返回PreparedStatement的实例
+  	## 3.填充占位符
+  	## 4.执行
+  	## 5.资源的关闭
+  # 二、JDBCUtils.java
+  	/**
+       * 获取数据库连接
+       * @return 返回数据库连接资源
+       * @throws Exception
+       */
+      public static Connection getConnection() throws Exception {
+          // 1.读取配置文件中的4个基本信息
+          InputStream resourceAsStream = ClassLoader.getSystemClassLoader().getResourceAsStream("jdbc.properties");
+          Properties properties = new Properties();
+          properties.load(resourceAsStream);
+          String user = properties.getProperty("user");
+          String password = properties.getProperty("password");
+          String url = properties.getProperty("url");
+          String driverClass = properties.getProperty("driverClass");
+  
+          // 2.加载驱动
+          Class.forName(driverClass);
+  
+          // 3.获取连接
+          Connection connection = DriverManager.getConnection(url, user, password);
+  
+          // 4.返回连接
+          return connection;
+      }
+  
+      /**
+       * 关闭数据库连接
+       * @param connection 数据连接
+       * @param preparedStatement preparedStatement资源
+       */
+      public void closeResource(Connection connection, PreparedStatement preparedStatement){
+          // 7.资源关闭
+          try {
+              if (preparedStatement != null)
+                  preparedStatement.close();
+          } catch (SQLException throwables) {
+              throwables.printStackTrace();
+          }
+          try {
+              if (connection != null)
+                  connection.close();
+          } catch (SQLException throwables) {
+              throwables.printStackTrace();
+          }
+  
+      }
+  ```
+
 #### 3.3.3 Java与SQL对应数据类型转换表
 
 | Java类型           | SQL类型                  |
@@ -539,8 +597,6 @@ public class StatementTest {
 		}
 	}
 ```
-
-
 
 #### 3.3.5 使用PreparedStatement实现查询操作
 
